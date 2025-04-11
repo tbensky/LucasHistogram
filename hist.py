@@ -17,33 +17,31 @@ with open("centers_table.csv","r") as f:
         d.append(float(line.strip())/1000)
 
 fig,ax = plt.subplots()
-n,bins,patches = plt.hist(d,bins=10,edgecolor='black')
-print(f"n={n}, {len(n)}\nbins={bins}, {len(bins)}\npatches={patches}")
+hist, bin_edges = np.histogram(d,bins=10)
+plt.bar(bin_edges[:-1],hist,width=0.0008,edgecolor='black')
+print(hist,bin_edges)
+
 
 plt.xticks(rotation=45) # or rotation=90
 plt.tight_layout()
 ax.ticklabel_format(axis='x', style='plain', useOffset=False)
 
 
-xx = np.array(bins[:-1])
-yy = np.array(n)
+xx = np.array(bin_edges[:-1])
+yy = np.array(hist)
 
 plt.xlabel("Frequency (kHz)")
 plt.ylabel("Count")
 plt.margins()
-#plt.plot(bins[:-1],n)
-#plt.show()
 
-
-x = np.arange(bins[0],1.000002*bins[-1],0.0001)
+x = np.arange(bin_edges[0],1.000002*bin_edges[-1],0.0001)
 y = gauss(x,10,573.336,0.0001,0)
 
 popt, pconv = curve_fit(gauss,xx,yy,p0=[20,573.336,0.001,0])
-print(popt)
-popt[1] += 0.0004
-plt.plot(x,gauss(x,*popt))
+print(f"popt={popt}")
+plt.plot(x,gauss(x,*popt),color='black',linewidth=2)
 
-sigma = math.sqrt(popt[2]/2)
+sigma = math.sqrt(popt[2]/2*1000)
 fwhm = 2.35 * sigma
 center = popt[1]*1000
 Q = round(center/fwhm,0)
@@ -51,5 +49,6 @@ Q = round(center/fwhm,0)
 plt.title(f"${{\\bar f}}$={round(center,3)} Hz, FWHM={round(fwhm,6)} Hz, Q={Q}")
 plt.tight_layout()
 print(popt)
+plt.show()
 plt.savefig("hist.png",dpi=300)
 plt.close()
